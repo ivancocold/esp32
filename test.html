@@ -1,30 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Messages reçus</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Messages</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function() {
-            function refreshTable() {
-                $.ajax({
-                    url: 'php.php', // Créez un fichier PHP nommé "refresh_table.php" pour gérer la récupération des données du tableau
-                    success: function(data) {
-                        $('#table-container').html(data); // Mettez à jour le contenu du conteneur de tableau avec les nouvelles données
+        $(document).ready(function()
+        {
+            function fetchMessages()
+            {
+                $.ajax(
+                    {
+                    url: 'php.php',
+                    success: function(data)
+                    {
+                        $('#message_table').html(data);
                     }
                 });
             }
-
-            // Rafraîchir le tableau toutes les 5 secondes
-            setInterval(refreshTable, 5000);
+            // Actualiser les messages toutes les 5 secondes
+            setInterval(fetchMessages, 5000);
         });
     </script>
 </head>
 <body>
-
-<div id="table-container">
-    <!-- Conteneur pour le tableau -->
-</div>
-
+    <div id="message_table">
+        <!-- Le tableau sera affiché ici -->
+    </div>
 </body>
 </html>
