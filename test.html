@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Messages reçus</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            function refreshTable() {
+                $.ajax({
+                    url: 'php.php', // Créez un fichier PHP nommé "refresh_table.php" pour gérer la récupération des données du tableau
+                    success: function(data) {
+                        $('#table-container').html(data); // Mettez à jour le contenu du conteneur de tableau avec les nouvelles données
+                    }
+                });
+            }
+
+            // Rafraîchir le tableau toutes les 5 secondes
+            setInterval(refreshTable, 5000);
+        });
+    </script>
+</head>
+<body>
+
+<div id="table-container">
+    <!-- Conteneur pour le tableau -->
+</div>
+
+</body>
+</html>

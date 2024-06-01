@@ -1,0 +1,77 @@
+import serial
+import mysql.connector
+from mysql.connector import Error
+import time
+from flask import Flask, render_template
+import threading
+
+port = 'COM7'
+baud_rate = 115200
+
+# Configuration de la base de données MySQL
+db_config ={
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'tpuser',
+    'database': 'chute'
+}
+
+# Fonction pour établir la connexion à la base de données
+def connect_to_database():
+    try:
+        # Tentative de connexion à la base de données
+        db_connection = mysql.connector.connect(**db_config)
+        if db_connection.is_connected():
+            print("Connecté à la base de données MySQL.")
+            return db_connection, db_connection.cursor()
+    except Error as e:
+        print("Erreur lors de la connexion à la base de données:", e)
+    return None, None
+
+# Connexion initiale à la base de données
+db, cursor = connect_to_database()
+
+# Création de la table si elle n'existe pas déjà
+if db and cursor:
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            message TEXT NOT NULL
+        )
+    """)
+    db.commit()
+
+app = Flask(__name__)
+
+def get_messages():
+    try:
+        cursor.execute("SELECT id, message, timestamp FROM messages ORDER BY id ASC")
+        messages = cursor.fetchall()
+        return {'messages': messages, 'error': None}
+    except Error as err:
+        error_message = "Erreur lors de l'exécution de la requête SELECT: {}".format(err)
+        return {'messages': [], 'error': error_message}
+
+@app.route('/')
+def index():
+    messages = get_messages()
+    return render_template('index.html', messages=messages)
+
+def read_serial():
+    while True:
+        if ser.in_waiting > 0:
+            ligne = ser.readline().decode('utf-8').strip()
+            if "startHere: Received from" in ligne:
+                print(ligne)
+                # Insérer le message dans la base de données
+                cursor.execute("INSERT INTO messages (message) VALUES (%s)", (ligne,))
+                db.commit()
+
+# Démarrer le thread de lecture du port série
+thread = threading.Thread(target=read_serial)
+thread.daemon = True
+thread.start()
+
+if __name__ == '__main__':
+    app.run(debug=True)
