@@ -1,51 +1,68 @@
 /* Styles de base */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f0f0f0;
     color: #333;
     margin: 0;
     padding: 0;
 }
+
 .container {
     width: 80%;
     margin: 0 auto;
     padding: 20px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
+
 h1 {
     text-align: center;
     color: #444;
+    font-size: 2em;
+    margin-bottom: 20px;
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
     margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 th, td {
-    border: 1px solid black;
-    padding: 8px;
+    padding: 12px 15px;
     text-align: left;
+    border-bottom: 1px solid #ddd;
 }
 
 th {
-    background-color: #f2f2f2;
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+td {
+    background-color: white;
+    color: #555;
 }
 
 caption {
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1.5em;
     margin-bottom: 10px;
 }
 
-
 tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #f2f2f2;
 }
+
 tr:hover {
-    background-color: #f1f1f1;
+    background-color: #e9f5ff;
+    transition: background-color 0.3s;
 }
 
 /* Styles pour rendre le tableau responsive */

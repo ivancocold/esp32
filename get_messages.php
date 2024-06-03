@@ -20,6 +20,7 @@
             setInterval(fetchMessages, 3000);
         });
     </script>
+    <link rel="icon" type="image/png" href="ehpad.png">
 </head>
 <body>
     <div id="message_table">

@@ -1,6 +1,6 @@
 // Import de la bibliothèque painlessMesh
 #include "painlessMesh.h"
-
+#include <ArduinoBLE.h>
 //************************************************************
 // Utilisation de la bibliothèque painlessMesh
 //
@@ -14,7 +14,6 @@
 
 // Nom du réseau
 #define MESH_PREFIX "CotonLePlusBeau"
-
 // Mdp du réseau
 #define MESH_PASSWORD "somethingSneaky"
 
@@ -26,6 +25,7 @@ uint32_t nodeId;
 bool lastButtonState = LOW;  // Pour suivre l'état précédent du bouton
 unsigned long lastHighTime = 0;  // Pour suivre le temps depuis que le bouton est HIGH
 int reinit = 5000; //Temps d'attente entre 2 messages d'un même noeud en millisecondes.
+unsigned long activationCount  = 0; //Nombre de chutes
 
 // Objet Scheduler pour contrôler les tâches personnalisées
 Scheduler userScheduler;
@@ -51,7 +51,7 @@ void sendMessage()
   {
     nodeId = mesh.getNodeId();
     // Message à envoyer
-    String msg = "Chute; Mr MAGAGI. ID : " + String(nodeId);
+    String msg = "Chute; Mr MAGAGI est tombé pour la "+ String(activationCount)+"ème fois de la journée. ID : " + String(nodeId);
     // Envoi du message à tous les nœuds du wifi-mesh
     mesh.sendBroadcast(msg);
     Serial.println(msg);  // Envoie le message via le port série
@@ -97,14 +97,38 @@ void nodeTimeAdjustedCallback(int32_t offset) {
   Serial.printf("Adjusted time %u. Offset = %d\n", mesh.getNodeTime(), offset);
 }
 
+// Déclaration du service et de la caractéristique BLE
+BLEService resetService("180F"); // UUID du service
+BLEByteCharacteristic resetCharacteristic("2A19", BLERead | BLEWrite); // UUID de la caractéristique
+BLEUnsignedLongCharacteristic countCharacteristic("2A1C", BLERead); // UUID de la caractéristique de compteur
+
 // Fonction de configuration
-void setup() {
+void setup() 
+{
   // Initialisation de la communication série à 115200 bauds
   Serial.begin(115200);
   Serial.println("Connecting to WiFiMesh...");
 
   // Configuration de la pin 1 comme entrée
   pinMode(1, INPUT);
+
+  // Configuration BLE
+  if (!BLE.begin())
+  {
+  Serial.println("starting BLE failed!");
+  while (1);
+  }
+
+   // Configurez le périphérique BLE
+  BLE.setLocalName("MAGAGI");
+  BLE.setAdvertisedService(resetService);
+  resetService.addCharacteristic(resetCharacteristic);
+  resetService.addCharacteristic(countCharacteristic);
+  BLE.addService(resetService);
+  resetCharacteristic.writeValue(0);
+  countCharacteristic.writeValue(activationCount);
+  BLE.advertise();
+  Serial.println("Bluetooth en attente de connexions...");
 
   // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
   // Configure les types de messages de débogage à afficher avant l'initialisation
@@ -139,26 +163,65 @@ void loop()
   // it will run the user scheduler as well
   // Mise à jour du réseau mesh
   mesh.update();
+  // Mise à jour BLE
+  BLE.poll();
+  
+  // Vérifiez si la caractéristique de réinitialisation a été écrite
+if (resetCharacteristic.written())
+{
+  // Lire la valeur de la caractéristique en tant qu'octets
+  uint8_t buf[20]; // 20 octets maximum
+  int bytesRead = resetCharacteristic.readValue(buf, sizeof(buf));
+
+  if (bytesRead > 0)
+  {
+    // Convertir les octets en une chaîne de caractères
+    String value = "";
+    for (int i = 0; i < bytesRead; i++)
+    {
+      value += (char)buf[i];
+    }
+
+    // Vérifier si la valeur est "futa"
+    if (value == "f")
+    {
+      activationCount=0;
+      Serial.println("Réinitialisation réussie. ");  // Envoyer le message "reset" sur le port série
+      // Réinitialiser la caractéristique à une chaîne vide après la réinitialisation
+      resetCharacteristic.writeValue((uint8_t)0);
+    }
+    else if (value == "0")
+    {
+      Serial.println("Reset BDD. "+ String(nodeId)); // Envoyer le message "reset" sur le port série
+    }
+    else if (value == "a")
+    {
+      Serial.println("Reset all."); // Envoyer le message "reset" sur le port série
+    }
+  }
+}
 
   // Lire l'état actuel du bouton
   int currentButtonState = digitalRead(1);
 
   // Vérifier si le bouton vient d'être pressé (transition de LOW à HIGH)
   if (currentButtonState == HIGH && lastButtonState == LOW)
-  {
-    // Envoyer un message lorsque le bouton est pressés
-    sendMessage();
-    // Enregistrer le moment où le bouton a été pressé
-    lastHighTime = millis();
-  }
+    {
+      activationCount++; // Incrémenter le compteur
+      countCharacteristic.writeValue(activationCount); // Mettre à jour la caractéristique
+      // Envoyer un message lorsque le bouton est pressés
+      sendMessage();
+      // Enregistrer le moment où le bouton a été pressé
+      lastHighTime = millis();
+    }
 
   // Si le bouton est maintenu enfoncé, vérifier le temps écoulé
   if (currentButtonState == HIGH && lastButtonState == HIGH)
-  {
-    if (millis() - lastHighTime >= reinit)  // 5 secondes
     {
-      // Réinitialiser lastButtonState à LOW après 5 secondes
-      lastButtonState = LOW;
+      if (millis() - lastHighTime >= reinit)  // 5 secondes
+        {
+          // Réinitialiser lastButtonState à LOW après 5 secondes
+          lastButtonState = LOW;
+        }
     }
-  }
 }

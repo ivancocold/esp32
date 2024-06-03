@@ -43,6 +43,27 @@ def insert_message(connection, message):
     except mysql.connector.Error as e:
         logging.error(f"Failed to insert record into MySQL table: {e}")
 
+def delete_patient_records(connection, patient):
+    try:
+        cursor = connection.cursor()
+        sql_delete_query = "DELETE FROM messages WHERE patient = %s"
+        cursor.execute(sql_delete_query, (patient,))
+        connection.commit()
+        logging.info(f"Records for patient {patient} deleted")
+    except mysql.connector.Error as e:
+        logging.error(f"Failed to delete records from MySQL table: {e}")
+
+def delete_all_records(connection):
+    try:
+        cursor = connection.cursor()
+        sql_delete_all_query = "DELETE FROM messages"
+        cursor.execute(sql_delete_all_query)
+        connection.commit()
+        logging.info("All records deleted")
+    except mysql.connector.Error as e:
+        logging.error(f"Failed to delete all records from MySQL table: {e}")
+
+
 def main():
     while True:
         ser = None
@@ -62,7 +83,13 @@ def main():
                 if ser.in_waiting > 0:
                     message = ser.readline().decode('utf-8').strip()
                     if message:
-                        insert_message(connection, message)
+                        if message.startswith("Chute;"):
+                            insert_message(connection, message)
+                        elif message.startswith("Reset BDD."):
+                            patient = message.split()[-1]  # Récupérer le dernier mot du message
+                            delete_patient_records(connection, patient)
+                        elif message == "Reset all.":
+                            delete_all_records(connection)
 
         except serial.SerialException as e:
             logging.error(f"Serial port error: {e}")
