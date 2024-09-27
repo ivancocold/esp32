@@ -1,12 +1,12 @@
 # Déscription du projet
 
-L'objectif est d’envoyer des messages avec plusieurs ESP32  connectés en wifi mesh. Quand il y a plusieurs ESP32 connectés, chaque ESP32 envoie et reçoit les messages.
+L'objectif est d’envoyer et recevoir des messages avec plusieurs cartes ESP32 connectés en wifi mesh. Chaque ESP32 connecté sur le réseau envoie et reçoit les messages du réseau.
  
 # Cas d’usage
 
-L'objectif global est de faire une maquette de suivi pour des personnes âgées. Par exemple, si une personne tombe, le capteur envoie un message/alerte. Ici dans le projet, la chute est simulée par l'activation de la pin 1 de la carte. Dans le cadre de mon projet, la pin est activée par un bouton branché dessus. Elle peut être activée au toucher de la pin directement. Vous pouvez adapter le code et brancher un accéléromètre sur la pin.
+L'objectif global est de faire une maquette de suivi pour des personnes âgées par exemple. Si une personne tombe, le capteur envoie un message/alerte. Dans mon projet, la chute est simulée par l'activation de la pin 1 de la carte. La pin est activée par un bouton branché dessus. A défaut d'un bouton, la pin peut être activée en la touchant directement avec la main. Vous pouvez adapter le code et brancher un accéléromètre sur la pin.
 
-Les messages reçus par wifi_mesh une carte sont filtrés. Ceux qui correspondent à un certain format sont envoyés sur un port série (COM7). Un script python qui s'exécute en continu lit le port série et filtre les messages. Les messages amorcent des requêtes SQL d'insertion ou de suppression dans une base de données MySql. Une page web affiche les alertes en temps réel. Un fichier php nommé "insert" sert à insérer des lignes dans la base de données pour des fins de test.
+Les messages reçus par une carte sont filtrés. Ceux qui correspondent à un certain format sont envoyés sur un port série (COM7). Un script python qui s'exécute en continu lit le port série et filtre les messages. Les messages amorcent des requêtes SQL d'insertion ou de suppression dans une base de données MySql. Une page web affiche les alertes en temps réel. Un fichier php nommé "insert" sert à insérer des lignes dans la base de données pour des fins de test.
 
 Un administrateur peut se connecter sur une carte par BLE (Bluetooth Low Energy). Il pourra réaliser les opérations suivantes :
 - réinitialiser le compteur de chutes de la carte
