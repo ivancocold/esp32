@@ -1,6 +1,6 @@
 # Déscription du projet
 
-L'objectif est d’envoyer et recevoir des messages avec plusieurs cartes ESP32 connectés en wifi mesh. Chaque ESP32 connecté sur le réseau envoie et reçoit les messages du réseau.
+L'objectif du projet est d’envoyer et recevoir des messages dans un réseau de cartes ESP32 connectés en wifi mesh. Chaque carte connectée sur le réseau envoie et reçoit des messages.
  
 # Cas d’usage
 
